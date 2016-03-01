@@ -1,4 +1,4 @@
-/***********  Spaceship Generator Class  ***********/
+/*************  Spaceship Generator Class  *************/
 function Spaceship( type, x, y ) {
 	//image file details
 	this.type = type;
@@ -17,6 +17,7 @@ function Spaceship( type, x, y ) {
 			this.h = 3;
 			//maximum movement
 			this.maxMove = 20;
+			this.speed = 3;
 			break;
 		case 'destroyer':
 			this.srcX = 162;
@@ -27,6 +28,7 @@ function Spaceship( type, x, y ) {
 			this.w = 8;
 			this.h = 9;
 			this.maxMove = 8;
+			this.speed = 1;
 			break;
 		case 'cruiser':
 			this.srcX = 288;
@@ -37,6 +39,7 @@ function Spaceship( type, x, y ) {
 			this.w = 6;
 			this.h = 6;
 			this.maxMove = 5;
+			this.speed = 2;
 			break;
 		default:
 			this.srcX = 0;
@@ -47,6 +50,7 @@ function Spaceship( type, x, y ) {
 			this.w = 0;
 			this.h = 0;
 			this.maxMove = 0;
+			this.speed = 0;
 	}
 	
 	//ship movement variables
@@ -54,7 +58,7 @@ function Spaceship( type, x, y ) {
 	this.rotation = 0;
 	this.scaleX = 1;
 	this.scaleY = 1;
-	this.move = this.maxMove;
+	this.curMove = this.maxMove;
 	this.I = { x:0, y:0, origX:0, origY:0 };  //Inertia
 	//ship actions per round
 	this.moved = false;
@@ -90,14 +94,14 @@ function Spaceship( type, x, y ) {
 				//display where the ship WAS
 				ctx.save();
 				ctx.beginPath();
-				ctx.globalAlpha = .4;
+				ctx.globalAlpha = .3;
 				ctx.fillStyle = '#0000aa';
 				ctx.fillRect( this.x*grid.w, this.y*grid.h, this.w*grid.w, this.h*grid.h );
 				ctx.fill();
 				ctx.restore();
 				ctx.save();
 				ctx.beginPath();
-				ctx.globalAlpha = .6;
+				ctx.globalAlpha = .1;
 				ctx.translate( (this.origX + this.w/2) * grid.w, (this.origY + this.h/2) * grid.h );
 				ctx.fillStyle = '#00aa00';
 				ctx.fillRect( 0 - this.w/2 * grid.w, 0 - this.h/2 * grid.h, this.w * grid.w, this.h * grid.h );
@@ -151,10 +155,14 @@ function Spaceship( type, x, y ) {
 		//console.log( 'reverse tracer goes here' );
 	}
 	
+	this.move = function() {
+		
+	}
+	
 	this.resetMove = function() {
 		//reset allowed movement
 		this.moved = false;
-		this.move = this.maxMove;
+		this.curMove = this.maxMove;
 		this.roation = this.origRot;
 		//apply any variable effects here:
 	}

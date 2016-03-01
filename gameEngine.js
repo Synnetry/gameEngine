@@ -9,7 +9,9 @@ var bgCanvas = document.getElementById('bgCanvas'),
 	h = gameCanvas.height,
 // arrays for listing player ships, enemy ships, and stars
 	ships = [],
-	enemies = [],
+	players = [],
+	currentP = 0,
+	//enemies = [],
 	stars = [],
 	selected,
 	selectedNum;
@@ -69,13 +71,14 @@ function init() {
 	generateStars( 50 );
 	
 	//insert testing data here
-	ships.push( new Spaceship( 'fighter', 65, 5 ) );
-	ships[0].I.x = -10;
-	ships[0].I.origX = -10;
-	ships[0].I.y = 5;
-	ships[0].I.origY = 5;
-	ships.push( new Spaceship( 'cruiser', 50, 45 ) );
-	ships.push( new Spaceship( 'destroyer', 40, 15 ) );
+	players.push( new Player( 'human' ) );
+	players[0].ships.push( new Spaceship( 'fighter', 65, 5 ) );
+	players[0].ships[0].I.x = -10;
+	players[0].ships[0].I.origX = -10;
+	players[0].ships[0].I.y = 5;
+	players[0].ships[0].I.origY = 5;
+	players[0].ships.push( new Spaceship( 'cruiser', 50, 45 ) );
+	players[0].ships.push( new Spaceship( 'destroyer', 40, 15 ) );
 	
 	//And... GO!
 	isPlaying = true;
@@ -86,15 +89,18 @@ function init() {
 // Loop to control the game
 function loop() {
 	if( isPlaying ) {
-		//update();
+		update();
 		draw();
 		requestAnimFrame(loop);
 	}
 }
 
 function update() {
-	//update anything that changes regardless of the player
-	
+	//track things that need to move, and move as necessary here
+	//move all ships that need to be moved
+	for( i=0; i<players[currentP].ships.length; i++ ) {
+		players[currentP].ships[i].move;
+	}
 }
 
 // Clear the screen and re-draw everything
@@ -104,12 +110,19 @@ function draw() {
 	drawBackground( bgCtx );
 	ctx.save();
 	ctx.translate( offsetX * grid.w, offsetY * grid.h );
+	for( i=0; i<players.length; i++ ) {
+		for( j=0; j<players[i].ships.length; j++ ) {
+			players[i].ships[j].draw();
+		}
+	}
+	/*   re-writing this to use players instead of a seperate player / enemies
 	for( i=0; i<ships.length; i++ ) {
 		ships[i].draw();
 	}
 	for( j=0; j<enemies.length; j++ ) {
 		enemies[j].draw();
 	}
+	*/
 	ctx.restore();
 }
 
@@ -166,18 +179,18 @@ function finishRound() {
 	//first stop the player
 	playerTurn = false;
 	//finish moving any ships that were skipped
-	for( i=0; i<ships.length; i++ ) {
-		if( ! ships[i].moved ) {
+	for( i=0; i<players[currentP].ships.length; i++ ) {
+		if( ! players[currentP].ships[i].moved ) {
 			if( ! roundEndConfirm ) {
 				roundEndConfirm = confirm( 'There are ships that have not finished moving, end round anyway?' );
 				if( roundEndConfirm ) {
-					moveShip( ships[i] );
+					moveShip( players[currentP].ships[i] );
 				}else{
 					playerTurn = true;
 					return false;
 				}
 			}else{
-				moveShip( ships[i] );
+				moveShip( players[currentP].ships[i] );
 			}
 		}
 	}
@@ -192,16 +205,16 @@ function finishRound() {
 
 // Set player ships to 
 function resetPlayerShips() {
-	for( i=0; i<ships.length; i++ ) {
-		ships[i].origX = ships[i].x;
-		ships[i].origSX = ships[i].scaleX;
-		ships[i].origY = ships[i].y;
-		ships[i].origSY = ships[i].scaleY;
-		ships[i].origRot = ships[i].rotation;
-		ships[i].origDir = ships[i].dir;
-		ships[i].move = ships[i].maxMove;
-		ships[i].resetMove();
-		ships[i].resetWeapons();
+	for( i=0; i<players[currentP].ships.length; i++ ) {
+		players[currentP].ships[i].origX = players[currentP].ships[i].x;
+		players[currentP].ships[i].origSX = players[currentP].ships[i].scaleX;
+		players[currentP].ships[i].origY = players[currentP].ships[i].y;
+		players[currentP].ships[i].origSY = players[currentP].ships[i].scaleY;
+		players[currentP].ships[i].origRot = players[currentP].ships[i].rotation;
+		players[currentP].ships[i].origDir = players[currentP].ships[i].dir;
+		players[currentP].ships[i].move = players[currentP].ships[i].maxMove;
+		players[currentP].ships[i].resetMove();
+		players[currentP].ships[i].resetWeapons();
 	}
 }
 
@@ -212,11 +225,11 @@ function runAI() {
 
 function findShip( x, y ) {
 	//check all player ships
-	for( i=0; i<ships.length; i++ ) {
+	for( i=0; i<players[currentP].ships.length; i++ ) {
 		//check vertical
-		if( x > ships[i].x * grid.w && x < (ships[i].x + ships[i].w) * grid.w) {
+		if( x > players[currentP].ships[i].x * grid.w && x < (players[currentP].ships[i].x + players[currentP].ships[i].w) * grid.w) {
 			//check horizontal
-			if( y > ships[i].y * grid.h && y < (ships[i].y + ships[i].h) * grid.h ) {
+			if( y > players[currentP].ships[i].y * grid.h && y < (players[currentP].ships[i].y + players[currentP].ships[i].h) * grid.h ) {
 				//return which ship was clicked on
 				return i;
 			}
@@ -226,11 +239,11 @@ function findShip( x, y ) {
 }
 
 function selectShip( shipNum, e ) {
-	selected = ships[shipNum];
+	selected = players[currentP].ships[shipNum];
 	selectedNum = shipNum;
-	ships[shipNum].selected = true;
-	ships[shipNum].clickX = Math.round( e.x / grid.w ) - ships[shipNum].origX;
-	ships[shipNum].clickY = Math.round( e.y / grid.h ) - ships[shipNum].origY;
+	selected.selected = true;
+	selected.clickX = Math.round( e.x / grid.w ) - players[currentP].ships[shipNum].origX;
+	selected.clickY = Math.round( e.y / grid.h ) - players[currentP].ships[shipNum].origY;
 	//console.log( ships[i].origX + ' ' + ships[i].clickX );
 }
 
@@ -266,8 +279,8 @@ function mouseClick(e) {
 				finishMove();
 			}
 		}else if( keyID == 2 ) {
-			for( i=0; i<ships.length; i++ ) {
-				console.log( ships[i] );
+			for( i=0; i<players[currentP].ships.length; i++ ) {
+				console.log( players[currentP].ships[i] );
 			}
 		}
 	}
@@ -390,7 +403,7 @@ function buttonPress(e, value) {
 		}else if( keyID == 9 ) {
 			e.preventDefault();
 			selectNextShip();
-			for( i=0; i<ships.length; i++ ) {
+			for( i=0; i<players[currentP].ships.length; i++ ) {
 				if( selected.moved ) {
 					selectNextShip();
 				}
@@ -415,7 +428,7 @@ function buttonPress(e, value) {
 function selfDestruct() {
 	selected.explode();
 	selected = undefined;
-	ships.splice( selectedNum, 1 );
+	players[currentP].ships.splice( selectedNum, 1 );
 	selectedNum = undefined;
 }
 
@@ -426,16 +439,16 @@ function shipDestroyed( ship ) {
 function selectNextShip() {
 	if( selected != undefined ) {
 		selected.selected = false;
-		if( selectedNum < ships.length - 1 ) {
+		if( selectedNum < players[currentP].ships.length - 1 ) {
 			selectedNum++;
 		}else{
 			selectedNum = 0;
 		}
-		selected = ships[selectedNum];
+		selected = players[currentP].ships[selectedNum];
 		selected.selected = true;
 	}else{
 		selectedNum = 0;
-		selected = ships[selectedNum];
+		selected = players[currentP].ships[selectedNum];
 		selected.selected = true;
 	}
 }
@@ -456,7 +469,7 @@ function cancelMove( ship ) {
 }
 
 function moveProjection( ship, dir ) {
-	if( ship.move > 0 ) {
+	if( ship.curMove > 0 ) {
 		switch( dir ) {
 			case 'up':
 				moveUp( ship, 1 );
@@ -490,18 +503,18 @@ function moveUp( ship, steps ) {
 		if( ship.y - steps >= 0 ) {
 			//ship.y-=steps;
 			ship.I.y -= steps;
-			ship.move--;
+			ship.curMove--;
 		}
 	}else if( ship.dir == 'down' ) {
 		//fire backwards thrusters and slow down
 		ship.I.y -= steps;
-		ships.move--;
+		ship.curMove--;
 	}else{
 		ship.dir = 'up';
 		ship.rotation = 90;
 		ship.scaleX = 1;
 		ship.scaleY = 1;
-		ship.move--;
+		ship.curMove--;
 	}
 }
 
@@ -510,17 +523,17 @@ function moveDown( ship, steps ) {
 		if( ship.y + ship.h + steps <= grid.y ) {
 			//ship.y+=steps;
 			ship.I.y += steps;
-			ship.move--;
+			ship.curMove--;
 		}
 	}else if( ship.dir == 'up' ) {
 		ship.I.y += steps;
-		ship.move--;
+		ship.curMove--;
 	}else{
 		ship.dir = 'down';
 		ship.rotation = 270;
 		ship.scaleX = 1;
 		ship.scaleY = 1;
-		ship.move--;
+		ship.curMove--;
 	}
 }
 
@@ -529,17 +542,17 @@ function moveLeft( ship, steps ) {
 		if( ship.x + ship.w + steps <= grid.x) {
 			//ship.x-=steps;
 			ship.I.x -= steps;
-			ship.move--;
+			ship.curMove--;
 		}
 	}else if( ship.dir == 'right' ) {
 		ship.I.x -= steps;
-		ship.move--;
+		ship.curMove--;
 	}else{
 		ship.dir = 'left';
 		ship.rotation = 0;
 		ship.scaleX = 1;
 		ship.scaleY = 1;
-		ship.move--;
+		ship.curMove--;
 	}
 }
 
@@ -548,16 +561,16 @@ function moveRight( ship, steps ) {
 		if( ship.x - steps >= 0 ) {
 			//ship.x+=steps;
 			ship.I.x += steps;
-			ship.move--;
+			ship.curMove--;
 		}
 	}else if( ship.dir == 'left' ) {
 		ship.I.x += steps;
-		ship.move--;
+		ship.curMove--;
 	}else{
 		ship.dir = 'right';
 		ship.rotation = 0;
 		ship.scaleX = -1;
 		ship.scaleY = 1;
-		ship.move--;
+		ship.curMove--;
 	}
 }
