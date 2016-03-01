@@ -1,0 +1,40 @@
+body{
+	background: #000000;
+	color: #ffffff;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#gameControls {
+	width: 70%;
+}
+
+#key {
+	text-align: right;
+	width: 38%;
+}
+
+#spacer {
+	width: 4%;
+}
+
+#action {
+	text-align: left;
+	width: 58%;
+}
+
+canvas{
+	display: block;
+}
+
+#bgCanvas {
+	border: #ff0000 2px solid;
+	background: #ffffff;
+}
+
+#overlap canvas {
+	margin: -600px 0 0;
+}

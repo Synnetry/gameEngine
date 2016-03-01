@@ -1,0 +1,46 @@
+<!Doctype HTML>
+<html>
+	<head>
+		<title>Space Fox Simulator!</title>
+		
+		<link rel='stylesheet' href='css/gameCSS.css'>
+	</head>
+	<body>
+		<canvas id='bgCanvas' width='800' height='600'>
+			This only shows up if you don't support Canvas... why you no support Canvas?
+		</canvas>
+		<div id='overlap'>
+			<canvas class='overlap' id='gameCanvas' width='800' height='600'></canvas>
+		</div>
+		<table id='gameControls'>
+			<caption> 
+				<h1> Controls </h1>
+			</caption>
+			<tr>
+				<td id='key'>
+					Left Mouse Button: <br>
+					Right Mouse Button: <br>
+					Tab: <br>
+					Arrow Keys: <br>
+					Enter: <br>
+					Esc: <br>
+					K: <br>
+				</td>
+				<td id='spacer'></td>
+				<td id='action'>
+					Select Ship <br>
+					Finish Move <br>
+					Select Next Ship <br>
+					Move <br>
+					Finish Move / End Turn <br>
+					Cancel Move <br>
+					Self Destruct <br>
+				</td>
+			</tr>
+		</table>
+			
+		<script src='js/gameEngine.js'></script>
+		<script src='js/ships.js'></script>
+		
+	</body>
+</html>
